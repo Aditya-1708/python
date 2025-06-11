@@ -1,18 +1,5 @@
 # a) Find-S Algorithm
 
-def find_s(data):
-    # Initialize the most specific hypothesis to the first positive example
-    hypothesis = data[0].copy()
-
-    for example in data:
-        if example[-1] == "Positive":
-            # Update the hypothesis to match the current example
-            for i in range(len(hypothesis) - 1):
-                if hypothesis[i] != example[i]:
-                    hypothesis[i] = "?"
-    return hypothesis
-
-# Sample dataset (attributes are for simplicity, the last column is the target class)
 data = [
     ['Sunny', 'Warm', 'High', 'Strong', 'Positive'],
     ['Sunny', 'Warm', 'High', 'Weak', 'Negative'],
@@ -20,6 +7,33 @@ data = [
     ['Rainy', 'Cold', 'High', 'Strong', 'Negative'],
     ['Sunny', 'Warm', 'Low', 'Strong', 'Positive']
 ]
+hypothesis = data[0][:-1]  # Start with the first positive example (excluding label)
+for row in data:
+    if row[-1] == "Positive":
+        for i in range(len(hypothesis)):
+            if hypothesis[i] != row[i]:
+                hypothesis[i] = "?"
+print("Find-S Hypothesis:", hypothesis)
 
-result = find_s(data)
-print("Find-S Hypothesis:", result)
+# b) Candidate Elimination Algorithm
+
+data = [
+    ['Sunny', 'Warm', 'High', 'Strong', 'Positive'],
+    ['Sunny', 'Warm', 'High', 'Weak', 'Negative'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Positive'],
+    ['Rainy', 'Cold', 'High', 'Strong', 'Negative'],
+    ['Sunny', 'Warm', 'Low', 'Strong', 'Positive']
+]
+s = data[0][:-1]  # initial specific hypothesis
+g = ['?'] * len(s)  # most general hypothesis
+for row in data:
+    if row[-1] == "Positive":
+        for i in range(len(s)):
+            if s[i] != row[i]:
+                s[i] = "?"
+    else:
+        for i in range(len(g)):
+            if g[i] != row[i]:
+                g[i] = "?"
+print("Specific Hypothesis:", s)
+print("General Hypothesis:", g)
