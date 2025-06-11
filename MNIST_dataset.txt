@@ -1,43 +1,35 @@
-import numpy as np
 from sklearn.datasets import fetch_openml
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 
-# Load dataset
-mnist = fetch_openml('mnist_784', version=1)
-X, y = mnist.data / 255.0, mnist.target.astype(int)
+# Load MNIST dataset
+x, y = fetch_openml('mnist_784', version=1, as_frame=False, return_X_y=True)
 
-# Split data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Normalize pixel values to [0, 1] and convert labels to integers
+x, y = x / 255.0, y.astype(int)
 
-# Binary Classification (0 vs 1)
-binary_mask_train = (y_train == 0) | (y_train == 1)
-binary_mask_test = (y_test == 0) | (y_test == 1)
+# Train-test split
+xtr, xte, ytr, yte = train_test_split(x, y, test_size=0.2, random_state=42)
 
-X_train_bin, y_train_bin = X_train[binary_mask_train], y_train[binary_mask_train]
-X_test_bin, y_test_bin = X_test[binary_mask_test], y_test[binary_mask_test]
-
-model_bin = LogisticRegression(max_iter=1000).fit(X_train_bin, y_train_bin)
-
-# Performance for Binary Classification
-y_pred_bin = model_bin.predict(X_test_bin)
+# Binary classification: 0 vs 1
+btr = (ytr < 2)
+bte = (yte < 2)
+m1 = LogisticRegression(max_iter=1000).fit(xtr[btr], ytr[btr])
 print("Binary Classification Report (0 vs 1):")
-print(classification_report(y_test_bin, y_pred_bin))
+print(classification_report(yte[bte], m1.predict(xte[bte])))
 
-# Multiclass Classification
-model_multi = LogisticRegression(max_iter=1000, multi_class='ovr').fit(X_train, y_train)
-y_pred_multi = model_multi.predict(X_test)
-
+# Multiclass classification: 0–9
+m2 = LogisticRegression(max_iter=1000, multi_class='ovr').fit(xtr, ytr)
 print("\nMulticlass Classification Report:")
-print(classification_report(y_test, y_pred_multi))
+yp = m2.predict(xte)
+print(classification_report(yte, yp))
 
-# Confusion Matrix for Multiclass Classification
-conf_matrix = confusion_matrix(y_test, y_pred_multi)
-plt.imshow(conf_matrix, cmap="Blues", interpolation='nearest')
-plt.colorbar()
+# Confusion matrix visualization
+plt.imshow(confusion_matrix(yte, yp), cmap="Blues")
 plt.title("Confusion Matrix")
-plt.ylabel('True Label')
-plt.xlabel('Predicted Label')
+plt.xlabel("Predicted")
+plt.ylabel("True")
+plt.colorbar()
 plt.show()
