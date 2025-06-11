@@ -1,45 +1,19 @@
-# ID3 Algorithm Example
-
-def id3(data, attributes):
-    labels = [row[-1] for row in data]
-    return labels[0] if len(set(labels)) == 1 else {
-        attributes[0]: {
-            v: id3(
-                [r[1:] for r in data if r[0] == v],
-                attributes[1:]
-            ) for v in set(r[0] for r in data)
-        }
-    }
-
-# Attributes and mapping
-attributes = ["Size", "Cost"]
+# Mapping from (Size, Cost) to Car Type
 mapping = {
     ("Small", "Low"): "Hatchback",
     ("Medium", "Medium"): "Compact SUV",
     ("Big", "High"): "SUV"
 }
-
-# Input data
+# Collect training data
 data = []
 for _ in range(int(input("Enter number of records: "))):
-    size, cost = input("Enter Size, Cost: ").split(",")
-    data.append([size, cost, mapping.get((size, cost), "Unknown")])
-
-# Build decision tree
-tree = id3(data, attributes)
+    s, c = input("Enter Size, Cost: ").split(",")
+    s, c = s.strip(), c.strip()
+    data.append((s, mapping.get((s, c), "Unknown")))
+# Build tree using only Size
+tree = {"Size": {s: label for s, label in data}}
 print("\nDecision Tree:", tree)
-
-# Prediction function
-def predict(tree, attributes, user_input):
-    if not isinstance(tree, dict):
-        return tree
-    attr = next(iter(tree))
-    return predict(
-        tree[attr].get(user_input[attributes.index(attr)], "Unknown"),
-        attributes,
-        user_input
-    )
-
-# Prediction input
-user_input = input("\n Enter Size, Cost: ").split(",")
-print("\n Predicted Car Type:", predict(tree, attributes, user_input))
+# Prediction
+s, c = input("\nEnter Size, Cost: ").split(",")
+s, c = s.strip(), c.strip()
+print("\nPredicted Car Type:", tree["Size"].get(s, "Unknown"))
