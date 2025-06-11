@@ -1,27 +1,15 @@
-from sklearn.datasets import fetch_openml
-from sklearn.linear_model import LogisticRegression
+from sklearn.datasets import fetch_california_housing
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
-import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import StandardScaler
 
-x, y = fetch_openml('mnist_784', version=1, as_frame=False, return_X_y=True)
-x, y = x / 255.0, y.astype(int)
-xtr, xte, ytr, yte = train_test_split(x, y, test_size=0.2, random_state=42)
+X, y = fetch_california_housing(return_X_y=True)
+X = StandardScaler().fit_transform(X)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-btr = (ytr < 2)
-bte = (yte < 2)
-m1 = LogisticRegression(max_iter=1000).fit(xtr[btr], ytr[btr])
-print("Binary Classification Report (0 vs 1):")
-print(classification_report(yte[bte], m1.predict(xte[bte])))
+model = LinearRegression().fit(X_train, y_train)
+y_pred = model.predict(X_test)
 
-m2 = LogisticRegression(max_iter=1000, multi_class='ovr').fit(xtr, ytr)
-print("\nMulticlass Classification Report:")
-yp = m2.predict(xte)
-print(classification_report(yte, yp))
-
-plt.imshow(confusion_matrix(yte, yp), cmap="Blues")
-plt.title("Confusion Matrix")
-plt.xlabel("Predicted")
-plt.ylabel("True")
-plt.colorbar()
-plt.show()
+print("MSE:", mean_squared_error(y_test, y_pred))
+print("R²:", r2_score(y_test, y_pred))
